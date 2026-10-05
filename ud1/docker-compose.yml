@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: asgbd_postgres
+    deploy:
+        resources:
+            limits:
+                memory: 2G
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    
+    volumes:
+      - bd_postgres:/var/lib/postgresql/data
+      - vol_erp:/mnt/vol_erp
+      - vol_empleados:/mnt/vol_empl
+      - vol_logs:/var/log/postgresql
+    networks:
+      ud1_interna:
+        ipv4_address: 172.30.0.10
+      ud1_visitantes:
+        ipv4_address: 172.31.0.10
+  
+  cliente_empleado:
+    image: postgres:16
+    container_name: cliente_interno
+    networks:
+      - ud1_interna
+    entrypoint: ["sleep", "infinity"]
+    
+  cliente_visitante:
+    image: postgres:16
+    container_name: cliente_visitante
+    networks:
+      - ud1_visitantes
+    entrypoint: ["sleep", "infinity"]
+volumes:
+  bd_postgres:
+  vol_erp:
+  vol_empleados:
+  vol_logs:
+networks:
+  ud1_interna:
+    ipam:
+        config:
+            - subnet: 172.30.0.0/24
+    
+  ud1_visitantes:
+      ipam:
+        config:
+            - subnet: 172.31.0.0/24
