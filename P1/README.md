@@ -38,6 +38,7 @@ Analistes: 3 persones = 3 connexions.
 
 
 ## Requisito 3: Memoria
+Asignado 2 GB al contenedor postgreSQL.
 
 ### Cálculo de memoria
 

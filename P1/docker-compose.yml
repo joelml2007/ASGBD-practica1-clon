@@ -27,7 +27,13 @@ services:
     networks:
       - ud1_interna
     entrypoint: ["sleep", "infinity"]
-    
+    healthcheck:
+      # Comprovació per TCP: durant la inicialització el servidor temporal només escolta pel socket Unix
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
   cliente_visitante:
     image: postgres:16
     container_name: cliente_visitante
