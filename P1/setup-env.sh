@@ -20,12 +20,12 @@ docker compose down -v
 docker compose up -d --wait
 
 ### 2. ARCHIVOS DE CONFIGURACIÓN
-# Copia la configuración de memoria y HBA al volumen de datos
-docker cp conf/memoria.conf empresa-db:/var/lib/postgresql/data/memoria.conf
-
-# Incluye memoria.conf en postgresql.conf si no está ya presente
+# Copia la configuración de memoria y logging al volumen de datos
+docker cp config/memoria.conf empresa-db:/var/lib/postgresql/data/memoria.conf
+docker cp config/logging.conf empresa-db:/var/lib/postgresql/data/logging.conf
 docker exec -i empresa-db bash -c "grep -q \"include = 'memoria.conf'\" /var/lib/postgresql/data/postgresql.conf || echo \"include = 'memoria.conf'\" >> /var/lib/postgresql/data/postgresql.conf"
-
+# Incluye logging.conf en postgresql.conf
+docker exec -i empresa-db bash -c "grep -q \"include = 'logging.conf'\" /var/lib/postgresql/data/postgresql.conf || echo \"include = 'logging.conf'\" >> /var/lib/postgresql/data/postgresql.conf"
 ### 3. REINICIO Y ESPERA
 # Reinicia el servicio para aplicar los parámetros estáticos (shared_buffers, max_connections)
 docker compose restart db 
