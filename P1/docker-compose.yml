@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: asgbd_postgres
+    container_name: empresa-db
     deploy:
         resources:
             limits:
@@ -9,7 +9,13 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    
+    healthcheck:
+      # Comprovació per TCP: durant la inicialització el servidor temporal només escolta pel socket Unix
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
     volumes:
       - bd_postgres:/var/lib/postgresql/data
       - vol_erp:/mnt/vol_erp
@@ -27,13 +33,7 @@ services:
     networks:
       - ud1_interna
     entrypoint: ["sleep", "infinity"]
-    healthcheck:
-      # Comprovació per TCP: durant la inicialització el servidor temporal només escolta pel socket Unix
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres"]
-      interval: 2s
-      timeout: 5s
-      retries: 30
-      start_period: 10s
+
   cliente_visitante:
     image: postgres:16
     container_name: cliente_visitante

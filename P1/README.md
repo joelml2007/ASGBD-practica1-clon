@@ -9,7 +9,9 @@ Este es el documento donde se explicará todo el trabajo relacionado con la prá
 |4. Conexiones     |         |         |
 |5. Almacenamiento     |         |         |
 |6. Trazabilidad     |         |         |
-|7. Ampliación     |         |         |
+|7. Cuenta de la aplicación     |         |         |
+|7. Acceso del personal     |         |         |
+|7. Ampliación: Caída repentina (opcional)     |         |         |
 
 Utilizado postgres 16 por ser una versión estable y no usar una versión latest. 
 Redes:
@@ -25,7 +27,7 @@ credenciales en .env ocultado por .gitignore
 se utiliza como clientes la misma imagen de postgres para evitar tener que instalar en otras imagenes el psql, ya que en postgres ya viene instalado. 
 
 
-Se utiliza entrypoint: ["sleep", "infinity"] para evitar que inicializen su base de datos
+Se utiliza entrypoint: ["sleep", "infinity"] para evitar que inicializen  subase de datos
 
 Se crea además un volumen de logs apuntando a /var/logs/postgresql para cumplir con el apartado 6
 
@@ -57,3 +59,24 @@ Asignado 2 GB al contenedor postgreSQL.
 
 Total peor caso: $512\text{ MB (SO)} + 512\text{ MB (shared)} + 720\text{ MB (work)} + 128\text{ MB} = \mathbf{1872\text{ MB}} < 2048\text{ MB}$.
 Se queda un margen de 176 MB libres.
+### Salida del servidor
+docker exec -i empresa-db psql -U postgres -c "SHOW shared_buffers;"
+docker exec -i empresa-db psql -U postgres -c "SHOW work_mem;"
+docker exec -i empresa-db psql -U postgres -c "SHOW maintenance_work_mem;"
+docker exec -i empresa-db psql -U postgres -c "SHOW max_connections;"
+ shared_buffers 
+----------------
+ 512MB
+(1 row)
+ work_mem 
+----------
+ 12MB
+(1 row)
+ maintenance_work_mem 
+----------------------
+ 128MB
+(1 row)
+ max_connections 
+-----------------
+ 60
+(1 row)
