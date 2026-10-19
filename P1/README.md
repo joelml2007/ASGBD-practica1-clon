@@ -60,23 +60,39 @@ Asignado 2 GB al contenedor postgreSQL.
 Total peor caso: $512\text{ MB (SO)} + 512\text{ MB (shared)} + 720\text{ MB (work)} + 128\text{ MB} = \mathbf{1872\text{ MB}} < 2048\text{ MB}$.
 Se queda un margen de 176 MB libres.
 ### Salida del servidor
+#### Comandos utilizados
 docker exec -i empresa-db psql -U postgres -c "SHOW shared_buffers;"
+
 docker exec -i empresa-db psql -U postgres -c "SHOW work_mem;"
+
 docker exec -i empresa-db psql -U postgres -c "SHOW maintenance_work_mem;"
+
 docker exec -i empresa-db psql -U postgres -c "SHOW max_connections;"
- shared_buffers 
-----------------
- 512MB
-(1 row)
- work_mem 
-----------
- 12MB
-(1 row)
- maintenance_work_mem 
-----------------------
- 128MB
-(1 row)
- max_connections 
------------------
- 60
-(1 row)
+
+#### Verificación
+docker exec -i empresa-db psql -U alumno -c "SELECT name, current_setting(name) AS valor_actiu FROM pg_settings WHERE name IN ('shared_buffers', 'work_mem', 'maintenance_work_mem', 'max_connections');"
+
+![Salida de los comandos](img/3.output.png)
+
+## Requisito 4: Conexiones
+El servidor debe admitir todas las conexiones necesarias para el ERP y el personal, pero no más de las necesarias.
+
+En el paso anterior, junto al cálculo de memoria, ya calculamos las conexiones necesarias. 
+
+- ERP: 3 instancias $\times$ 15 conexiones = 45 conexiones.
+- RRHH: 2 personas = 2 conexiones.   
+- Analistas: 3 personas = 3 conexiones.   
+- Total nominal concurrente: 50 conexiones.   
+- Total configurado en max_connections: 60 conexiones (dejando 10 slots de reserva y margen técnico para el superusuario/mantenimiento).   
+
+### Prueba de conexión límite
+Se prueba utilizando el comando pgbench para simular varias conexiones simultáneas. Hay que crear tablas de prueba para que funcione pgbench. 
+
+#### 1. Crear las tablas de prueba de pgbench
+docker exec -i -e PGPASSWORD=alumno cliente_interno pgbench -i -U alumno -h 172.30.0.10 postgres
+
+#### 2. Lanzar la saturación de 65 conexiones
+docker exec -i -e PGPASSWORD=alumno cliente_interno pgbench -U alumno -h 172.30.0.10 -c 65 -j 65 -T 2 postgres
+![Salida de los comandos](img/4.conexiones_invalidas.png)
+![Salida de los comandos](img/4.conexiones_validas.png)
+
